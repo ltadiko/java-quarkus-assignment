@@ -1,0 +1,23 @@
+meta {
+  name: Update Store
+  type: http
+  seq: 4
+}
+
+put {
+  url: {{baseUrl}}/store/1
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "name": "Updated Store",
+    "quantityProductsInStock": 150
+  }
+}
+

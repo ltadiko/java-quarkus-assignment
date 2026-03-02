@@ -1,0 +1,24 @@
+meta {
+  name: Create Assignment
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/fulfillment-assignments
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "warehouseCode": "MWH.001",
+    "productId": 1,
+    "storeId": 1
+  }
+}
+

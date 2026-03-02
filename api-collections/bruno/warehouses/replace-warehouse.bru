@@ -1,0 +1,25 @@
+meta {
+  name: Replace Warehouse
+  type: http
+  seq: 4
+}
+
+put {
+  url: {{baseUrl}}/warehouse/1
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "businessUnitCode": "WH-NEW-001",
+    "location": "AMSTERDAM-001",
+    "capacity": 150,
+    "stock": 50
+  }
+}
+

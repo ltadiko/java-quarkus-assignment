@@ -1,0 +1,25 @@
+meta {
+  name: Update Product
+  type: http
+  seq: 4
+}
+
+put {
+  url: {{baseUrl}}/products/1
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "name": "Updated Product",
+    "description": "Updated description",
+    "price": 149.99,
+    "stock": 200
+  }
+}
+

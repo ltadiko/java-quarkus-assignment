@@ -1,0 +1,23 @@
+meta {
+  name: Create Store
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/store
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "name": "New Store",
+    "quantityProductsInStock": 100
+  }
+}
+
