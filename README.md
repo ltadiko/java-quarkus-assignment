@@ -1,5 +1,7 @@
 # Fulfilment Cost Control System - Code Assignment
 
+[![Java CI with Maven](https://github.com/ltadiko/java-quarkus-assignment/actions/workflows/ci.yml/badge.svg)](https://github.com/ltadiko/java-quarkus-assignment/actions/workflows/ci.yml)
+
 ## 📋 About the Assignment
 
 This is a Java/Quarkus-based fulfillment system that manages Warehouses, Stores, Products, and their relationships. The assignment involves implementing missing features and answering architectural questions.
