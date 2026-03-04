@@ -76,13 +76,13 @@ cd java-assignment
 # Or using Maven directly
 mvn clean test
 
-# With Java 25 alias
-java25 && mvn clean test
+# With Java 21
+export JAVA_HOME=$(/usr/libexec/java_home -v 21) && mvn clean test
 ```
 
 ## Expected Results
 
-All 54 tests should now:
+All 224 tests should now:
 1. ✅ Have proper transaction context
 2. ✅ Resolve LocationGateway dependency correctly
 3. ✅ Use valid location codes that exist in the registry

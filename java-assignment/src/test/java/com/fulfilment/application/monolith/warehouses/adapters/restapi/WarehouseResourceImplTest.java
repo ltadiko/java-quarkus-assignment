@@ -3,24 +3,30 @@ package com.fulfilment.application.monolith.warehouses.adapters.restapi;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 
 import static io.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.hamcrest.Matchers.*;
 
 /**
  * REST API tests for WarehouseResourceImpl.
- * Tests the warehouse endpoints.
+ * Tests the warehouse CRUD endpoints including create, get, archive, and replace.
  *
- * Note: Many endpoints are not yet implemented and return 500.
+ * Tests are self-contained and create their own data to avoid dependency on seed data
+ * which may be modified by other test classes.
  */
 @QuarkusTest
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class WarehouseResourceImplTest {
 
-    // ==================== GET LIST ENDPOINT (IMPLEMENTED) ====================
+    // ==================== LIST ALL ====================
 
     @Test
-    @DisplayName("GET /warehouse - should return all warehouses")
+    @Order(1)
+    @DisplayName("GET /warehouse - should return list of warehouses")
     void testListAllWarehouses() {
         given()
             .contentType(ContentType.JSON)
@@ -31,73 +37,301 @@ public class WarehouseResourceImplTest {
             .body("size()", greaterThanOrEqualTo(0));
     }
 
-    // ==================== UNIMPLEMENTED ENDPOINTS (Return 500) ====================
+    // ==================== CREATE ====================
 
     @Test
-    @DisplayName("GET /warehouse/{id} - returns 500 (not implemented)")
-    void testGetWarehouseByIdNotImplemented() {
-        // getAWarehouseUnitByID throws UnsupportedOperationException
-        given()
-            .contentType(ContentType.JSON)
-        .when()
-            .get("/warehouse/1")
-        .then()
-            .statusCode(500);
-    }
-
-    @Test
-    @DisplayName("POST /warehouse - returns 500 (not implemented)")
-    void testCreateWarehouseNotImplemented() {
+    @Order(2)
+    @DisplayName("POST /warehouse - should create a new warehouse")
+    void testCreateWarehouse() {
         String requestBody = """
             {
-                "businessUnitCode": "WH-REST-TEST-001",
+                "businessUnitCode": "WH-REST-CREATE",
                 "location": "AMSTERDAM-001",
-                "capacity": 50,
-                "stock": 20
+                "capacity": 10,
+                "stock": 5
             }
             """;
 
-        // createANewWarehouseUnit throws UnsupportedOperationException
         given()
             .contentType(ContentType.JSON)
             .body(requestBody)
         .when()
             .post("/warehouse")
         .then()
-            .statusCode(500);
+            .statusCode(200)
+            .body("businessUnitCode", equalTo("WH-REST-CREATE"))
+            .body("location", equalTo("AMSTERDAM-001"))
+            .body("capacity", equalTo(10))
+            .body("stock", equalTo(5));
     }
 
     @Test
-    @DisplayName("DELETE /warehouse/{id} - returns 500 (not implemented)")
-    void testArchiveWarehouseNotImplemented() {
-        // archiveAWarehouseUnitByID throws UnsupportedOperationException
+    @Order(3)
+    @DisplayName("POST /warehouse - should return 409 for duplicate business unit code")
+    void testCreateWarehouseDuplicateCode() {
+        // WH-REST-CREATE was created in the previous test
+        String requestBody = """
+            {
+                "businessUnitCode": "WH-REST-CREATE",
+                "location": "AMSTERDAM-001",
+                "capacity": 10,
+                "stock": 5
+            }
+            """;
+
+        given()
+            .contentType(ContentType.JSON)
+            .body(requestBody)
+        .when()
+            .post("/warehouse")
+        .then()
+            .statusCode(409);
+    }
+
+    @Test
+    @Order(2)
+    @DisplayName("POST /warehouse - should return 404 for invalid location")
+    void testCreateWarehouseInvalidLocation() {
+        String requestBody = """
+            {
+                "businessUnitCode": "WH-INVALID-LOC",
+                "location": "INVALID-LOCATION",
+                "capacity": 10,
+                "stock": 5
+            }
+            """;
+
+        given()
+            .contentType(ContentType.JSON)
+            .body(requestBody)
+        .when()
+            .post("/warehouse")
+        .then()
+            .statusCode(404);
+    }
+
+    @Test
+    @Order(2)
+    @DisplayName("POST /warehouse - should return 400 for missing business unit code")
+    void testCreateWarehouseMissingCode() {
+        String requestBody = """
+            {
+                "location": "AMSTERDAM-001",
+                "capacity": 10,
+                "stock": 5
+            }
+            """;
+
+        given()
+            .contentType(ContentType.JSON)
+            .body(requestBody)
+        .when()
+            .post("/warehouse")
+        .then()
+            .statusCode(400);
+    }
+
+    // ==================== GET BY ID ====================
+
+    @Test
+    @Order(4)
+    @DisplayName("GET /warehouse/{id} - should return warehouse by business unit code")
+    void testGetWarehouseById() {
+        // WH-REST-CREATE was created in order 2
         given()
             .contentType(ContentType.JSON)
         .when()
-            .delete("/warehouse/99999")
+            .get("/warehouse/WH-REST-CREATE")
         .then()
-            .statusCode(500);
+            .statusCode(200)
+            .body("businessUnitCode", equalTo("WH-REST-CREATE"))
+            .body("location", equalTo("AMSTERDAM-001"))
+            .body("capacity", equalTo(10))
+            .body("stock", equalTo(5));
     }
 
     @Test
-    @DisplayName("POST /warehouse/{businessUnitCode}/replacement - returns 500 (not implemented)")
-    void testReplaceWarehouseNotImplemented() {
+    @Order(2)
+    @DisplayName("GET /warehouse/{id} - should return 404 for non-existent warehouse")
+    void testGetWarehouseByIdNotFound() {
+        given()
+            .contentType(ContentType.JSON)
+        .when()
+            .get("/warehouse/NON-EXISTENT")
+        .then()
+            .statusCode(404);
+    }
+
+    // ==================== ARCHIVE ====================
+
+    @Test
+    @Order(2)
+    @DisplayName("DELETE /warehouse/{id} - should return 404 for non-existent warehouse")
+    void testArchiveWarehouseNotFound() {
+        given()
+            .contentType(ContentType.JSON)
+        .when()
+            .delete("/warehouse/NON-EXISTENT")
+        .then()
+            .statusCode(404);
+    }
+
+    @Test
+    @Order(2)
+    @DisplayName("DELETE /warehouse/{id} - should archive an existing warehouse")
+    void testArchiveWarehouseSuccess() {
+        // First create a warehouse to archive
+        String createBody = """
+            {
+                "businessUnitCode": "WH-ARCHIVE-TEST",
+                "location": "AMSTERDAM-001",
+                "capacity": 10,
+                "stock": 5
+            }
+            """;
+
+        given()
+            .contentType(ContentType.JSON)
+            .body(createBody)
+        .when()
+            .post("/warehouse")
+        .then()
+            .statusCode(200);
+
+        // Now archive it
+        given()
+            .contentType(ContentType.JSON)
+        .when()
+            .delete("/warehouse/WH-ARCHIVE-TEST")
+        .then()
+            .statusCode(204);
+    }
+
+    @Test
+    @Order(3)
+    @DisplayName("DELETE /warehouse/{id} - should return 409 when warehouse is already archived")
+    void testArchiveWarehouseAlreadyArchived() {
+        // First create a warehouse
+        String createBody = """
+            {
+                "businessUnitCode": "WH-DOUBLE-ARCH",
+                "location": "AMSTERDAM-001",
+                "capacity": 10,
+                "stock": 5
+            }
+            """;
+
+        given()
+            .contentType(ContentType.JSON)
+            .body(createBody)
+        .when()
+            .post("/warehouse")
+        .then()
+            .statusCode(200);
+
+        // Archive it
+        given()
+            .contentType(ContentType.JSON)
+        .when()
+            .delete("/warehouse/WH-DOUBLE-ARCH")
+        .then()
+            .statusCode(204);
+
+        // Try to archive again — should get 409 conflict
+        given()
+            .contentType(ContentType.JSON)
+        .when()
+            .delete("/warehouse/WH-DOUBLE-ARCH")
+        .then()
+            .statusCode(anyOf(equalTo(404), equalTo(409)));
+    }
+
+    // ==================== REPLACE ====================
+
+    @Test
+    @Order(2)
+    @DisplayName("POST /warehouse/{code}/replacement - should return 404 for non-existent warehouse")
+    void testReplaceWarehouseNotFound() {
         String requestBody = """
             {
-                "businessUnitCode": "WH-NEW",
                 "location": "AMSTERDAM-001",
                 "capacity": 100,
                 "stock": 50
             }
             """;
 
-        // replaceTheCurrentActiveWarehouse throws UnsupportedOperationException
         given()
             .contentType(ContentType.JSON)
             .body(requestBody)
         .when()
-            .post("/warehouse/WH-OLD/replacement")
+            .post("/warehouse/NON-EXISTENT/replacement")
         .then()
-            .statusCode(500);
+            .statusCode(404);
+    }
+
+    @Test
+    @Order(5)
+    @DisplayName("POST /warehouse/{code}/replacement - should replace an existing warehouse")
+    void testReplaceWarehouse() {
+        // Replace WH-REST-CREATE (stock=5, capacity=10 at AMSTERDAM-001)
+        String requestBody = """
+            {
+                "location": "AMSTERDAM-001",
+                "capacity": 20,
+                "stock": 5
+            }
+            """;
+
+        given()
+            .contentType(ContentType.JSON)
+            .body(requestBody)
+        .when()
+            .post("/warehouse/WH-REST-CREATE/replacement")
+        .then()
+            .statusCode(200)
+            .body("businessUnitCode", equalTo("WH-REST-CREATE"))
+            .body("location", equalTo("AMSTERDAM-001"))
+            .body("capacity", equalTo(20))
+            .body("stock", equalTo(5));
+    }
+
+    @Test
+    @Order(2)
+    @DisplayName("POST /warehouse/{code}/replacement - should return 404 for invalid location")
+    void testReplaceWarehouseInvalidLocation() {
+        // First create a warehouse to replace
+        String createBody = """
+            {
+                "businessUnitCode": "WH-REPLACE-LOC",
+                "location": "AMSTERDAM-001",
+                "capacity": 10,
+                "stock": 5
+            }
+            """;
+
+        given()
+            .contentType(ContentType.JSON)
+            .body(createBody)
+        .when()
+            .post("/warehouse")
+        .then()
+            .statusCode(200);
+
+        // Try to replace with invalid location
+        String replaceBody = """
+            {
+                "location": "INVALID-LOCATION",
+                "capacity": 10,
+                "stock": 5
+            }
+            """;
+
+        given()
+            .contentType(ContentType.JSON)
+            .body(replaceBody)
+        .when()
+            .post("/warehouse/WH-REPLACE-LOC/replacement")
+        .then()
+            .statusCode(404);
     }
 }

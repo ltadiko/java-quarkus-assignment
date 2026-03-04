@@ -114,4 +114,35 @@ public class StoreEventObserverTest {
     void testObserverIsInjectable() {
         assertNotNull(observer, "StoreEventObserver should be injectable");
     }
+
+    // ==================== DIRECT OBSERVER METHOD TESTS ====================
+
+    @Test
+    @DisplayName("onStoreCreated should handle event without errors")
+    void testOnStoreCreatedDirectly() {
+        Store store = new Store("Direct Create Test");
+        store.id = 100L;
+        store.quantityProductsInStock = 10;
+
+        StoreEvents.StoreCreatedEvent event = new StoreEvents.StoreCreatedEvent(store);
+        assertDoesNotThrow(() -> observer.onStoreCreated(event));
+    }
+
+    @Test
+    @DisplayName("onStoreUpdated should handle event without errors")
+    void testOnStoreUpdatedDirectly() {
+        Store store = new Store("Direct Update Test");
+        store.id = 200L;
+        store.quantityProductsInStock = 20;
+
+        StoreEvents.StoreUpdatedEvent event = new StoreEvents.StoreUpdatedEvent(store);
+        assertDoesNotThrow(() -> observer.onStoreUpdated(event));
+    }
+
+    @Test
+    @DisplayName("onStoreDeleted should handle event without errors")
+    void testOnStoreDeletedDirectly() {
+        StoreEvents.StoreDeletedEvent event = new StoreEvents.StoreDeletedEvent(300L);
+        assertDoesNotThrow(() -> observer.onStoreDeleted(event));
+    }
 }

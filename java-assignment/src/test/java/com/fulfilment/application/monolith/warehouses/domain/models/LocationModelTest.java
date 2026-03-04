@@ -95,5 +95,105 @@ public class LocationModelTest {
         assertTrue(maxWh > 0);
         assertTrue(maxCap > 0);
     }
-}
 
+    // ==================== canAddWarehouse TESTS ====================
+
+    @Test
+    @DisplayName("Should allow adding warehouse when below limit")
+    void testCanAddWarehouseBelowLimit() {
+        Location location = new Location("TEST", 3, 100);
+        assertTrue(location.canAddWarehouse(0));
+        assertTrue(location.canAddWarehouse(1));
+        assertTrue(location.canAddWarehouse(2));
+    }
+
+    @Test
+    @DisplayName("Should not allow adding warehouse when at limit")
+    void testCanAddWarehouseAtLimit() {
+        Location location = new Location("TEST", 3, 100);
+        assertFalse(location.canAddWarehouse(3));
+        assertFalse(location.canAddWarehouse(4));
+    }
+
+    // ==================== isCapacityValid TESTS ====================
+
+    @Test
+    @DisplayName("Should validate capacity within limits")
+    void testIsCapacityValidWithinLimits() {
+        Location location = new Location("TEST", 1, 100);
+        assertTrue(location.isCapacityValid(1));
+        assertTrue(location.isCapacityValid(50));
+        assertTrue(location.isCapacityValid(100));
+    }
+
+    @Test
+    @DisplayName("Should reject invalid capacity")
+    void testIsCapacityValidOutOfLimits() {
+        Location location = new Location("TEST", 1, 100);
+        assertFalse(location.isCapacityValid(0));
+        assertFalse(location.isCapacityValid(-1));
+        assertFalse(location.isCapacityValid(101));
+    }
+
+    // ==================== equals / hashCode / toString TESTS ====================
+
+    @Test
+    @DisplayName("Should be equal when same identification")
+    void testEqualsWithSameIdentification() {
+        Location loc1 = new Location("SAME-ID", 1, 50);
+        Location loc2 = new Location("SAME-ID", 5, 200);
+        assertEquals(loc1, loc2);
+        assertEquals(loc1.hashCode(), loc2.hashCode());
+    }
+
+    @Test
+    @DisplayName("Should not be equal when different identification")
+    void testEqualsWithDifferentIdentification() {
+        Location loc1 = new Location("ID-A", 1, 50);
+        Location loc2 = new Location("ID-B", 1, 50);
+        assertNotEquals(loc1, loc2);
+    }
+
+    @Test
+    @DisplayName("Should be equal to itself")
+    void testEqualsSameInstance() {
+        Location loc = new Location("SELF", 1, 50);
+        assertEquals(loc, loc);
+    }
+
+    @Test
+    @DisplayName("Should not be equal to null or different type")
+    void testEqualsNullAndDifferentType() {
+        Location loc = new Location("TEST", 1, 50);
+        assertNotEquals(null, loc);
+        assertNotEquals("a string", loc);
+    }
+
+    @Test
+    @DisplayName("toString should contain identification")
+    void testToString() {
+        Location loc = new Location("AMSTERDAM-001", 5, 100);
+        String str = loc.toString();
+        assertTrue(str.contains("AMSTERDAM-001"));
+        assertTrue(str.contains("5"));
+        assertTrue(str.contains("100"));
+    }
+
+    // ==================== Constructor negative value TESTS ====================
+
+    @Test
+    @DisplayName("Should throw exception for negative max warehouses")
+    void testNegativeMaxWarehousesThrows() {
+        assertThrows(IllegalArgumentException.class, () ->
+            new Location("NEG-WH", -1, 100)
+        );
+    }
+
+    @Test
+    @DisplayName("Should throw exception for negative max capacity")
+    void testNegativeMaxCapacityThrows() {
+        assertThrows(IllegalArgumentException.class, () ->
+            new Location("NEG-CAP", 5, -10)
+        );
+    }
+}

@@ -156,16 +156,17 @@ docker build -f src/main/docker/Dockerfile.jvm -t fulfillment-app .
 | GET | `/store/{id}` | Get store by ID |
 | POST | `/store` | Create store |
 | PUT | `/store/{id}` | Update store |
+| PATCH | `/store/{id}` | Partial update store |
 | DELETE | `/store/{id}` | Delete store |
 
 ### Products
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/products` | List all products |
-| GET | `/products/{id}` | Get product by ID |
-| POST | `/products` | Create product |
-| PUT | `/products/{id}` | Update product |
-| DELETE | `/products/{id}` | Delete product |
+| GET | `/product` | List all products |
+| GET | `/product/{id}` | Get product by ID |
+| POST | `/product` | Create product |
+| PUT | `/product/{id}` | Update product |
+| DELETE | `/product/{id}` | Delete product |
 
 ### Fulfillment Assignments (BONUS)
 | Method | Endpoint | Description |
@@ -223,46 +224,35 @@ mvn clean test jacoco:report
 |--------|---------|
 | Line Coverage (Overall) | 80% |
 | Branch Coverage (Overall) | 70% |
-| Line Coverage (Per Class) | 70% |
+| Line Coverage (Per Class) | 80% |
 
 ### Test Classes
 
 | Test Class | Tests | Coverage Area |
 |------------|-------|---------------|
-| LocationGatewayTest | 11 | Location resolution |
-| LocationModelTest | 9 | Location domain model |
-| StoreResourceTransactionTest | 11 | Store events integration |
-| StoreResourceTest | 13 | Store REST API |
-| StoreEventObserverTest | 8 | Event observer |
-| StoreModelTest | 10 | Store entity model |
-| LegacyStoreManagerGatewayTest | 10 | Legacy system integration |
-| ProductEndpointTest | 1 | Product endpoint |
-| ProductResourceTest | 11 | Product REST API |
-| ProductRepositoryTest | 14 | Product repository |
-| WarehouseRepositoryTest | 18 | Warehouse CRUD |
-| WarehouseResourceImplTest | 8 | Warehouse REST API |
-| WarehouseModelTest | 7 | Warehouse domain model |
-| DbWarehouseTest | 8 | Warehouse entity mapping |
-| CreateWarehouseUseCaseTest | 13 | Create validations |
-| ReplaceWarehouseUseCaseTest | 9 | Replace validations |
-| ArchiveWarehouseUseCaseTest | 9 | Archive functionality |
-| FulfillmentAssignmentRepositoryTest | 15 | Assignment CRUD |
+| FulfillmentAssignmentRepositoryTest | 14 | Assignment CRUD |
 | FulfillmentAssignmentResourceTest | 14 | Assignment REST API |
-| FulfillmentAssignmentModelTest | 9 | Assignment domain model |
-| DbFulfillmentAssignmentTest | 11 | Assignment entity mapping |
-| CreateFulfillmentAssignmentUseCaseTest | 15 | Assignment business rules |
-| **Total** | **~225 tests** | |
+| CreateFulfillmentAssignmentUseCaseTest | 10 | Assignment business rules |
+| FulfillmentAssignmentModelTest | 7 | Assignment domain model |
+| DbFulfillmentAssignmentTest | 9 | Assignment entity mapping |
+| ProductEndpointTest | 1 | Product endpoint |
+| ProductRepositoryTest | 13 | Product repository |
+| ProductResourceTest | 9 | Product REST API |
+| StoreResourceTest | 10 | Store REST API |
+| StoreResourceTransactionTest | 11 | Store events integration |
+| StoreEventObserverTest | 10 | Event observer |
+| StoreModelTest | 9 | Store entity model |
+| LegacyStoreManagerGatewayTest | 9 | Legacy system integration |
 | LocationGatewayTest | 11 | Location resolution |
-| StoreResourceTransactionTest | 11 | Store events |
-| StoreEventObserverTest | 8 | Event observer |
-| WarehouseRepositoryTest | 18 | CRUD operations |
+| LocationModelTest | 20 | Location domain model |
+| WarehouseRepositoryTest | 11 | Warehouse CRUD |
+| WarehouseResourceImplTest | 13 | Warehouse REST API |
+| WarehouseModelTest | 6 | Warehouse domain model |
+| DbWarehouseTest | 7 | Warehouse entity mapping |
 | CreateWarehouseUseCaseTest | 13 | Create validations |
 | ReplaceWarehouseUseCaseTest | 9 | Replace validations |
-| ArchiveWarehouseUseCaseTest | 9 | Archive functionality |
-| FulfillmentAssignmentRepositoryTest | 15 | Assignment CRUD |
-| CreateFulfillmentAssignmentUseCaseTest | 10+ | Assignment rules |
-| FulfillmentAssignmentResourceTest | 14 | REST API |
-| **Total** | **~118 tests** | |
+| ArchiveWarehouseUseCaseTest | 8 | Archive functionality |
+| **Total** | **224 tests** | |
 
 ## 🔧 Configuration
 
@@ -416,4 +406,4 @@ Completed as part of the Fulfilment Cost Control System interview assignment.
 
 ---
 
-*Last updated: March 2, 2026*
+*Last updated: March 4, 2026*

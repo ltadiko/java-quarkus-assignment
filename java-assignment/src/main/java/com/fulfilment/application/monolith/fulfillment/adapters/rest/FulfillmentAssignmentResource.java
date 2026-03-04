@@ -101,9 +101,12 @@ public class FulfillmentAssignmentResource {
     @Operation(summary = "List all fulfillment assignments")
     @APIResponse(responseCode = "200", description = "List of all assignments")
     public List<FulfillmentAssignmentResponse> getAll() {
-        return repository.getAll().stream()
+        LOGGER.info("Received request to list all fulfillment assignments");
+        var assignments = repository.getAll().stream()
             .map(FulfillmentAssignmentResponse::from)
             .toList();
+        LOGGER.infov("Returning {0} fulfillment assignment(s)", assignments.size());
+        return assignments;
     }
 
     /**
@@ -118,13 +121,16 @@ public class FulfillmentAssignmentResource {
     })
     public FulfillmentAssignmentResponse getById(
             @Parameter(description = "Assignment ID") @PathParam("id") Long id) {
+        LOGGER.infov("Received request to get fulfillment assignment with id: {0}", id);
         FulfillmentAssignment assignment = repository.findAssignmentById(id);
         if (assignment == null) {
+            LOGGER.warnv("Fulfillment assignment with id {0} not found", id);
             throw new WebApplicationException(
                 "Fulfillment assignment with ID " + id + " not found",
                 Response.Status.NOT_FOUND
             );
         }
+        LOGGER.infov("Found fulfillment assignment with id: {0}", id);
         return FulfillmentAssignmentResponse.from(assignment);
     }
 
@@ -134,6 +140,7 @@ public class FulfillmentAssignmentResource {
     @GET
     @Path("/by-store/{storeId}")
     public List<FulfillmentAssignmentResponse> getByStore(@PathParam("storeId") Long storeId) {
+        LOGGER.infov("Received request to get fulfillment assignments by store id: {0}", storeId);
         return repository.findByStoreId(storeId).stream()
             .map(FulfillmentAssignmentResponse::from)
             .toList();
@@ -145,6 +152,7 @@ public class FulfillmentAssignmentResource {
     @GET
     @Path("/by-warehouse/{warehouseCode}")
     public List<FulfillmentAssignmentResponse> getByWarehouse(@PathParam("warehouseCode") String warehouseCode) {
+        LOGGER.infov("Received request to get fulfillment assignments by warehouse code: {0}", warehouseCode);
         return repository.findByWarehouseCode(warehouseCode).stream()
             .map(FulfillmentAssignmentResponse::from)
             .toList();
@@ -156,6 +164,7 @@ public class FulfillmentAssignmentResource {
     @GET
     @Path("/by-product/{productId}")
     public List<FulfillmentAssignmentResponse> getByProduct(@PathParam("productId") Long productId) {
+        LOGGER.infov("Received request to get fulfillment assignments by product id: {0}", productId);
         return repository.findByProductId(productId).stream()
             .map(FulfillmentAssignmentResponse::from)
             .toList();
@@ -168,10 +177,13 @@ public class FulfillmentAssignmentResource {
     @Path("/{id}")
     @Transactional
     public Response delete(@PathParam("id") Long id) {
+        LOGGER.infov("Received request to delete fulfillment assignment with id: {0}", id);
         try {
             repository.removeById(id);
+            LOGGER.infov("Successfully deleted fulfillment assignment with id: {0}", id);
             return Response.noContent().build();
         } catch (EntityNotFoundException e) {
+            LOGGER.warnv("Fulfillment assignment with id {0} not found for deletion", id);
             throw new WebApplicationException(e.getMessage(), Response.Status.NOT_FOUND);
         }
     }

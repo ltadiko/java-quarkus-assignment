@@ -102,20 +102,29 @@ JaCoCo is configured with **80% minimum line coverage**. Coverage report is gene
 
 | Test Class | Tests |
 |------------|-------|
-| LocationGatewayTest | 11 |
+| FulfillmentAssignmentRepositoryTest | 14 |
+| FulfillmentAssignmentResourceTest | 14 |
+| CreateFulfillmentAssignmentUseCaseTest | 10 |
+| FulfillmentAssignmentModelTest | 7 |
+| DbFulfillmentAssignmentTest | 9 |
+| ProductEndpointTest | 1 |
+| ProductRepositoryTest | 13 |
+| ProductResourceTest | 9 |
+| StoreResourceTest | 10 |
 | StoreResourceTransactionTest | 11 |
-| StoreResourceTest | 13 |
-| StoreEventObserverTest | 8 |
-| ProductResourceTest | 11 |
-| ProductRepositoryTest | 14 |
-| WarehouseRepositoryTest | 18 |
+| StoreEventObserverTest | 10 |
+| StoreModelTest | 9 |
+| LegacyStoreManagerGatewayTest | 9 |
+| LocationGatewayTest | 11 |
+| LocationModelTest | 20 |
+| WarehouseRepositoryTest | 11 |
+| WarehouseResourceImplTest | 13 |
+| WarehouseModelTest | 6 |
+| DbWarehouseTest | 7 |
 | CreateWarehouseUseCaseTest | 13 |
 | ReplaceWarehouseUseCaseTest | 9 |
-| ArchiveWarehouseUseCaseTest | 9 |
-| FulfillmentAssignmentResourceTest | 14 |
-| FulfillmentAssignmentRepositoryTest | 15 |
-| + Model & Entity Tests | 50+ |
-| **Total** | **~200+ tests** |
+| ArchiveWarehouseUseCaseTest | 8 |
+| **Total** | **224 tests** |
 
 ## Project Structure
 

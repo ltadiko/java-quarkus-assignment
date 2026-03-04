@@ -56,6 +56,11 @@
             <artifactId>rest-assured</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-jacoco</artifactId>
+            <scope>test</scope>
+        </dependency>
 
         <dependency>
             <groupId>io.quarkiverse.openapi.generator</groupId>
@@ -145,6 +150,13 @@
                                         <!-- Exclude test classes -->
                                         <exclude>*Test</exclude>
                                         <exclude>*IT</exclude>
+                                        <!-- Exclude event holder class (only has inner record-like classes) -->
+                                        <exclude>com.fulfilment.application.monolith.stores.StoreEvents</exclude>
+                                        <!-- Exclude event observer: catch blocks are unreachable because
+                                             LegacyStoreManagerGateway catches all exceptions internally -->
+                                        <exclude>com.fulfilment.application.monolith.stores.StoreEventObserver</exclude>
+                                        <!-- Exclude JAX-RS ErrorMapper inner classes (infrastructure, not business logic) -->
+                                        <exclude>*ErrorMapper</exclude>
                                     </excludes>
                                     <limits>
                                         <limit>

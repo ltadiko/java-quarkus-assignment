@@ -46,16 +46,22 @@ public class StoreResource {
 
   @GET
   public List<Store> get() {
-    return Store.listAll(Sort.by("name"));
+    LOGGER.info("Received request to list all stores");
+    List<Store> stores = Store.listAll(Sort.by("name"));
+    LOGGER.infov("Returning {0} store(s)", stores.size());
+    return stores;
   }
 
   @GET
   @Path("{id}")
   public Store getSingle(Long id) {
+    LOGGER.infov("Received request to get store with id: {0}", id);
     Store entity = Store.findById(id);
     if (entity == null) {
+      LOGGER.warnv("Store with id {0} not found", id);
       throw new WebApplicationException("Store with id of " + id + " does not exist.", 404);
     }
+    LOGGER.infov("Found store with id: {0}, name: {1}", id, entity.name);
     return entity;
   }
 
@@ -72,12 +78,15 @@ public class StoreResource {
   @POST
   @Transactional
   public Response create(Store store) {
+    LOGGER.infov("Received request to create store with name: {0}", store.name);
     if (store.id != null) {
+      LOGGER.warnv("Bad request: id was invalidly set on create request");
       throw new WebApplicationException("Id was invalidly set on request.", 422);
     }
 
     store.persist();
     storeCreatedEvent.fire(new StoreEvents.StoreCreatedEvent(store));
+    LOGGER.infov("Successfully created store with id: {0}, name: {1}", store.id, store.name);
 
     return Response.ok(store).status(201).build();
   }
@@ -97,19 +106,23 @@ public class StoreResource {
   @Path("{id}")
   @Transactional
   public Store update(Long id, Store updatedStore) {
+    LOGGER.infov("Received request to update store with id: {0}", id);
     if (updatedStore.name == null) {
+      LOGGER.warnv("Bad request: store name was not set on update request for id: {0}", id);
       throw new WebApplicationException("Store Name was not set on request.", 422);
     }
 
     Store entity = Store.findById(id);
 
     if (entity == null) {
+      LOGGER.warnv("Store with id {0} not found for update", id);
       throw new WebApplicationException("Store with id of " + id + " does not exist.", 404);
     }
 
     entity.name = updatedStore.name;
     entity.quantityProductsInStock = updatedStore.quantityProductsInStock;
     storeUpdatedEvent.fire(new StoreEvents.StoreUpdatedEvent(entity));
+    LOGGER.infov("Successfully updated store with id: {0}, name: {1}", id, entity.name);
 
     return entity;
   }
@@ -129,13 +142,16 @@ public class StoreResource {
   @Path("{id}")
   @Transactional
   public Store patch(Long id, Store updatedStore) {
+    LOGGER.infov("Received request to patch store with id: {0}", id);
     if (updatedStore.name == null) {
+      LOGGER.warnv("Bad request: store name was not set on patch request for id: {0}", id);
       throw new WebApplicationException("Store Name was not set on request.", 422);
     }
 
     Store entity = Store.findById(id);
 
     if (entity == null) {
+      LOGGER.warnv("Store with id {0} not found for patch", id);
       throw new WebApplicationException("Store with id of " + id + " does not exist.", 404);
     }
 
@@ -148,6 +164,7 @@ public class StoreResource {
     }
 
     storeUpdatedEvent.fire(new StoreEvents.StoreUpdatedEvent(entity));
+    LOGGER.infov("Successfully patched store with id: {0}, name: {1}", id, entity.name);
 
     return entity;
   }
@@ -166,12 +183,15 @@ public class StoreResource {
   @Path("{id}")
   @Transactional
   public Response delete(Long id) {
+    LOGGER.infov("Received request to delete store with id: {0}", id);
     Store entity = Store.findById(id);
     if (entity == null) {
+      LOGGER.warnv("Store with id {0} not found for deletion", id);
       throw new WebApplicationException("Store with id of " + id + " does not exist.", 404);
     }
     entity.delete();
     storeDeletedEvent.fire(new StoreEvents.StoreDeletedEvent(id));
+    LOGGER.infov("Successfully deleted store with id: {0}", id);
     return Response.status(204).build();
   }
 
