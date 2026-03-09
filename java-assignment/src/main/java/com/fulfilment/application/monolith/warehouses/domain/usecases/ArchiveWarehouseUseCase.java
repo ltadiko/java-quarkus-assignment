@@ -50,6 +50,29 @@ public class ArchiveWarehouseUseCase implements ArchiveWarehouseOperation {
   }
 
   /**
+   * Archives a warehouse by its database ID.
+   *
+   * @param id the database ID of the warehouse to archive
+   * @throws IllegalArgumentException if id is null
+   * @throws EntityNotFoundException if warehouse not found
+   * @throws IllegalStateException if warehouse is already archived
+   */
+  @Override
+  @Transactional
+  public void archiveById(Long id) {
+    if (id == null) {
+      throw new IllegalArgumentException("Warehouse ID is required");
+    }
+
+    Warehouse warehouse = warehouseStore.findByDatabaseId(id);
+    if (warehouse == null) {
+      throw new EntityNotFoundException("Warehouse with id " + id + " not found");
+    }
+
+    archive(warehouse);
+  }
+
+  /**
    * Archives the given warehouse.
    *
    * @param warehouse the warehouse to archive

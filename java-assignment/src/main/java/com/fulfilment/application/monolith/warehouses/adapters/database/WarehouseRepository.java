@@ -10,7 +10,6 @@ import org.jboss.logging.Logger;
 
 /**
  * Repository implementation for warehouse persistence.
- *
  * Provides CRUD operations for warehouse entities, implementing the WarehouseStore
  * port interface. This is a thin persistence layer — all business validations
  * are handled by the use case classes.
@@ -30,8 +29,8 @@ public class WarehouseRepository implements WarehouseStore, PanacheRepository<Db
    */
   @Override
   public List<Warehouse> getAll() {
-    LOGGER.debug("Fetching all warehouses from database");
-    return this.listAll().stream().map(DbWarehouse::toWarehouse).toList();
+    LOGGER.debug("Fetching all active warehouses from database");
+    return find("archivedAt is null").list().stream().map(DbWarehouse::toWarehouse).toList();
   }
 
   /**
@@ -59,16 +58,10 @@ public class WarehouseRepository implements WarehouseStore, PanacheRepository<Db
    */
   @Override
   public void update(Warehouse warehouse) {
-    // Find existing warehouse by business unit code
-    // Prefer active warehouse, but also find archived ones if needed
-    List<DbWarehouse> allWithCode = find("businessUnitCode", warehouse.businessUnitCode).list();
-    DbWarehouse existing = allWithCode.stream()
-        .filter(w -> w.archivedAt == null)
-        .findFirst()
-        .orElse(allWithCode.isEmpty() ? null : allWithCode.get(0));
+    DbWarehouse existing = find("businessUnitCode = ?1 and archivedAt is null", warehouse.businessUnitCode).firstResult();
 
     if (existing == null) {
-      LOGGER.warnv("Attempted to update non-existent warehouse: {0}", warehouse.businessUnitCode);
+      LOGGER.warnv("Attempted to update non-existent or archived warehouse: {0}", warehouse.businessUnitCode);
       return;
     }
 
@@ -89,9 +82,9 @@ public class WarehouseRepository implements WarehouseStore, PanacheRepository<Db
   @Override
   public void remove(Warehouse warehouse) {
     DbWarehouse existing =
-        find("businessUnitCode", warehouse.businessUnitCode).firstResult();
+        find("businessUnitCode = ?1 and archivedAt is null", warehouse.businessUnitCode).firstResult();
     if (existing == null) {
-      LOGGER.warnv("Attempted to remove non-existent warehouse: {0}", warehouse.businessUnitCode);
+      LOGGER.warnv("Attempted to remove non-existent or already archived warehouse: {0}", warehouse.businessUnitCode);
       return;
     }
 
@@ -106,16 +99,14 @@ public class WarehouseRepository implements WarehouseStore, PanacheRepository<Db
    */
   @Override
   public void deleteArchived(String businessUnitCode) {
-    DbWarehouse existing = find("businessUnitCode", businessUnitCode).firstResult();
+    DbWarehouse existing = find("businessUnitCode = ?1 and archivedAt is not null", businessUnitCode).firstResult();
     if (existing == null) {
-      LOGGER.warnv("Attempted to delete non-existent warehouse: {0}", businessUnitCode);
+      LOGGER.warnv("No archived warehouse found to delete: {0}", businessUnitCode);
       return;
     }
 
-    if (existing.archivedAt != null) {
-      deleteById(existing.id);
-      LOGGER.infov("Permanently deleted archived warehouse: {0}", businessUnitCode);
-    }
+    deleteById(existing.id);
+    LOGGER.infov("Permanently deleted archived warehouse: {0}", businessUnitCode);
   }
 
   /**
@@ -131,18 +122,41 @@ public class WarehouseRepository implements WarehouseStore, PanacheRepository<Db
       return null;
     }
 
-    List<DbWarehouse> allWithCode = find("businessUnitCode", buCode).list();
+    // First try to find an active (non-archived) warehouse
+    DbWarehouse dbWarehouse = find("businessUnitCode = ?1 and archivedAt is null", buCode).firstResult();
 
-    if (allWithCode.isEmpty()) {
+    // Fall back to archived if no active exists
+    if (dbWarehouse == null) {
+      dbWarehouse = find("businessUnitCode", buCode).firstResult();
+    }
+
+    if (dbWarehouse == null) {
       LOGGER.debugv("Warehouse with business unit code {0} not found", buCode);
       return null;
     }
 
-    // Prefer active (non-archived) warehouse, but return archived if no active exists
-    DbWarehouse dbWarehouse = allWithCode.stream()
-        .filter(w -> w.archivedAt == null)
-        .findFirst()
-        .orElse(allWithCode.get(0));
+
+    return dbWarehouse.toWarehouse();
+  }
+
+  /**
+   * Finds a warehouse by its database ID.
+   *
+   * @param id the database ID
+   * @return the warehouse if found, or null if not found
+   */
+  @Override
+  public Warehouse findByDatabaseId(Long id) {
+    if (id == null) {
+      LOGGER.debug("findByDatabaseId called with null id");
+      return null;
+    }
+
+    DbWarehouse dbWarehouse = findById(id);
+    if (dbWarehouse == null) {
+      LOGGER.debugv("Warehouse with id {0} not found", id);
+      return null;
+    }
 
     return dbWarehouse.toWarehouse();
   }

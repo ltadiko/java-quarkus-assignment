@@ -135,16 +135,36 @@ public class WarehouseResourceImplTest {
 
     @Test
     @Order(4)
-    @DisplayName("GET /warehouse/{id} - should return warehouse by business unit code")
+    @DisplayName("GET /warehouse/{id} - should return warehouse by database id")
     void testGetWarehouseById() {
-        // WH-REST-CREATE was created in order 2
+        // First create a warehouse and capture its id
+        String createBody = """
+            {
+                "businessUnitCode": "WH-GET-BY-ID",
+                "location": "AMSTERDAM-001",
+                "capacity": 10,
+                "stock": 5
+            }
+            """;
+
+        String createdId = given()
+            .contentType(ContentType.JSON)
+            .body(createBody)
+        .when()
+            .post("/warehouse")
+        .then()
+            .statusCode(200)
+            .extract().path("id");
+
+        // Now get by database id
         given()
             .contentType(ContentType.JSON)
         .when()
-            .get("/warehouse/WH-REST-CREATE")
+            .get("/warehouse/" + createdId)
         .then()
             .statusCode(200)
-            .body("businessUnitCode", equalTo("WH-REST-CREATE"))
+            .body("id", equalTo(createdId))
+            .body("businessUnitCode", equalTo("WH-GET-BY-ID"))
             .body("location", equalTo("AMSTERDAM-001"))
             .body("capacity", equalTo(10))
             .body("stock", equalTo(5));
@@ -152,28 +172,52 @@ public class WarehouseResourceImplTest {
 
     @Test
     @Order(2)
-    @DisplayName("GET /warehouse/{id} - should return 404 for non-existent warehouse")
+    @DisplayName("GET /warehouse/{id} - should return 404 for non-existent warehouse id")
     void testGetWarehouseByIdNotFound() {
+        given()
+            .contentType(ContentType.JSON)
+        .when()
+            .get("/warehouse/999999")
+        .then()
+            .statusCode(404);
+    }
+
+    @Test
+    @Order(2)
+    @DisplayName("GET /warehouse/{id} - should return 400 for invalid (non-numeric) id")
+    void testGetWarehouseByIdInvalid() {
         given()
             .contentType(ContentType.JSON)
         .when()
             .get("/warehouse/NON-EXISTENT")
         .then()
-            .statusCode(404);
+            .statusCode(400);
     }
 
     // ==================== ARCHIVE ====================
 
     @Test
     @Order(2)
-    @DisplayName("DELETE /warehouse/{id} - should return 404 for non-existent warehouse")
+    @DisplayName("DELETE /warehouse/{id} - should return 404 for non-existent warehouse id")
     void testArchiveWarehouseNotFound() {
+        given()
+            .contentType(ContentType.JSON)
+        .when()
+            .delete("/warehouse/999999")
+        .then()
+            .statusCode(404);
+    }
+
+    @Test
+    @Order(2)
+    @DisplayName("DELETE /warehouse/{id} - should return 400 for invalid (non-numeric) id")
+    void testArchiveWarehouseInvalidId() {
         given()
             .contentType(ContentType.JSON)
         .when()
             .delete("/warehouse/NON-EXISTENT")
         .then()
-            .statusCode(404);
+            .statusCode(400);
     }
 
     @Test
@@ -190,19 +234,20 @@ public class WarehouseResourceImplTest {
             }
             """;
 
-        given()
+        String createdId = given()
             .contentType(ContentType.JSON)
             .body(createBody)
         .when()
             .post("/warehouse")
         .then()
-            .statusCode(200);
+            .statusCode(200)
+            .extract().path("id");
 
-        // Now archive it
+        // Now archive it using the database id
         given()
             .contentType(ContentType.JSON)
         .when()
-            .delete("/warehouse/WH-ARCHIVE-TEST")
+            .delete("/warehouse/" + createdId)
         .then()
             .statusCode(204);
     }
@@ -221,27 +266,28 @@ public class WarehouseResourceImplTest {
             }
             """;
 
-        given()
+        String createdId = given()
             .contentType(ContentType.JSON)
             .body(createBody)
         .when()
             .post("/warehouse")
         .then()
-            .statusCode(200);
+            .statusCode(200)
+            .extract().path("id");
 
-        // Archive it
+        // Archive it using database id
         given()
             .contentType(ContentType.JSON)
         .when()
-            .delete("/warehouse/WH-DOUBLE-ARCH")
+            .delete("/warehouse/" + createdId)
         .then()
             .statusCode(204);
 
-        // Try to archive again — should get 409 conflict
+        // Try to archive again — should get 409 conflict or 404
         given()
             .contentType(ContentType.JSON)
         .when()
-            .delete("/warehouse/WH-DOUBLE-ARCH")
+            .delete("/warehouse/" + createdId)
         .then()
             .statusCode(anyOf(equalTo(404), equalTo(409)));
     }

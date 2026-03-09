@@ -6,4 +6,6 @@ public interface ArchiveWarehouseOperation {
   void archive(Warehouse warehouse);
 
   void archiveByCode(String businessUnitCode);
+
+  void archiveById(Long id);
 }

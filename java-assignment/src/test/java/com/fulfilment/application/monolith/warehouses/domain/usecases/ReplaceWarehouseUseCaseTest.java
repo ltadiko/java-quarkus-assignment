@@ -84,12 +84,20 @@ public class ReplaceWarehouseUseCaseTest {
     // Act
     replaceWarehouseUseCase.replace("WH-TEST-ARCHIVED", newWarehouse);
 
-    // Assert
-    var allWarehouses = warehouseRepository.getAll();
-    assertTrue(
-        allWarehouses.stream()
-            .anyMatch(w -> w.businessUnitCode.equals("WH-TEST-ARCHIVED") && w.archivedAt != null),
-        "Old warehouse should be archived");
+    // Assert - getAll() filters out archived, so use findByBusinessUnitCode
+    // After replace: old warehouse is archived, new one is active with same code
+    Warehouse currentWarehouse = warehouseRepository.findByBusinessUnitCode("WH-TEST-ARCHIVED");
+    assertNotNull(currentWarehouse, "New warehouse should exist after replacement");
+    assertNull(currentWarehouse.archivedAt, "New active warehouse should not be archived");
+    assertEquals(120, currentWarehouse.capacity, "Should have new warehouse capacity");
+
+    // Verify old warehouse was archived by checking that getAll() doesn't contain archived entries
+    // but the DB has 2 records (archived + active) for this code
+    long totalWithCode = warehouseRepository.find("businessUnitCode", "WH-TEST-ARCHIVED").count();
+    assertEquals(2, totalWithCode, "Should have 2 records: 1 archived + 1 active");
+
+    long archivedCount = warehouseRepository.find("businessUnitCode = ?1 and archivedAt is not null", "WH-TEST-ARCHIVED").count();
+    assertTrue(archivedCount > 0, "Old warehouse should be archived");
   }
 
   // ==================== ERROR TESTS ====================

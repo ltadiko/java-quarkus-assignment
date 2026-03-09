@@ -50,12 +50,8 @@ public class ArchiveWarehouseUseCaseTest {
         // Act
         archiveWarehouseUseCase.archive(createdWarehouse);
 
-        // Assert - need to refetch to see the change
-        var allWarehouses = warehouseRepository.getAll();
-        Warehouse archivedWarehouse = allWarehouses.stream()
-            .filter(w -> w.businessUnitCode.equals("WH-ARCHIVE-001"))
-            .findFirst()
-            .orElse(null);
+        // Assert - getAll() filters out archived, so use findByBusinessUnitCode which falls back to archived
+        Warehouse archivedWarehouse = warehouseRepository.findByBusinessUnitCode("WH-ARCHIVE-001");
 
         assertNotNull(archivedWarehouse, "Warehouse should still exist");
         assertNotNull(archivedWarehouse.archivedAt, "Warehouse should have archivedAt set");
@@ -72,12 +68,8 @@ public class ArchiveWarehouseUseCaseTest {
         // Act
         archiveWarehouseUseCase.archiveByCode("WH-ARCHIVE-002");
 
-        // Assert
-        var allWarehouses = warehouseRepository.getAll();
-        Warehouse archivedWarehouse = allWarehouses.stream()
-            .filter(w -> w.businessUnitCode.equals("WH-ARCHIVE-002"))
-            .findFirst()
-            .orElse(null);
+        // Assert - getAll() filters out archived, so use findByBusinessUnitCode
+        Warehouse archivedWarehouse = warehouseRepository.findByBusinessUnitCode("WH-ARCHIVE-002");
 
         assertNotNull(archivedWarehouse, "Warehouse should still exist");
         assertNotNull(archivedWarehouse.archivedAt, "Warehouse should have archivedAt set");
@@ -96,12 +88,8 @@ public class ArchiveWarehouseUseCaseTest {
         // Act
         archiveWarehouseUseCase.archive(createdWarehouse);
 
-        // Assert
-        var allWarehouses = warehouseRepository.getAll();
-        Warehouse archivedWarehouse = allWarehouses.stream()
-            .filter(w -> w.businessUnitCode.equals("WH-PRESERVE"))
-            .findFirst()
-            .orElse(null);
+        // Assert - getAll() filters out archived, so use findByBusinessUnitCode
+        Warehouse archivedWarehouse = warehouseRepository.findByBusinessUnitCode("WH-PRESERVE");
 
         assertNotNull(archivedWarehouse);
         assertEquals("WH-PRESERVE", archivedWarehouse.businessUnitCode);
@@ -136,12 +124,8 @@ public class ArchiveWarehouseUseCaseTest {
         Warehouse createdWarehouse = warehouseRepository.findByBusinessUnitCode("WH-DOUBLE-ARCHIVE");
         archiveWarehouseUseCase.archive(createdWarehouse);
 
-        // Get the archived warehouse
-        var allWarehouses = warehouseRepository.getAll();
-        Warehouse archivedWarehouse = allWarehouses.stream()
-            .filter(w -> w.businessUnitCode.equals("WH-DOUBLE-ARCHIVE"))
-            .findFirst()
-            .orElse(null);
+        // Get the archived warehouse using findByBusinessUnitCode (falls back to archived)
+        Warehouse archivedWarehouse = warehouseRepository.findByBusinessUnitCode("WH-DOUBLE-ARCHIVE");
 
         // Act & Assert - try to archive again
         assertThrows(

@@ -61,7 +61,8 @@ public class WarehouseResourceImpl implements WarehouseResource {
   @Override
   public Warehouse getAWarehouseUnitByID(String id) {
     LOGGER.infov("Received request to get warehouse with id: {0}", id);
-    var warehouse = warehouseRepository.findByBusinessUnitCode(id);
+    Long warehouseId = parseWarehouseId(id);
+    var warehouse = warehouseRepository.findByDatabaseId(warehouseId);
     if (warehouse == null) {
       LOGGER.warnv("Warehouse with id {0} not found", id);
       throw new WebApplicationException("Warehouse with id " + id + " does not exist.", 404);
@@ -75,8 +76,12 @@ public class WarehouseResourceImpl implements WarehouseResource {
   public void archiveAWarehouseUnitByID(String id) {
     LOGGER.infov("Received request to archive warehouse with id: {0}", id);
     try {
-      archiveWarehouseOperation.archiveByCode(id);
+      Long warehouseId = parseWarehouseId(id);
+      archiveWarehouseOperation.archiveById(warehouseId);
       LOGGER.infov("Successfully archived warehouse with id: {0}", id);
+    } catch (NumberFormatException e) {
+      LOGGER.warnv("Invalid warehouse id format: {0}", id);
+      throw new WebApplicationException("Invalid warehouse id: " + id, 400);
     } catch (IllegalArgumentException e) {
       LOGGER.warnv("Bad request while archiving warehouse {0}: {1}", id, e.getMessage());
       throw new WebApplicationException(e.getMessage(), 400);
@@ -134,10 +139,29 @@ public class WarehouseResourceImpl implements WarehouseResource {
   private Warehouse toWarehouseResponse(
       com.fulfilment.application.monolith.warehouses.domain.models.Warehouse warehouse) {
     var response = new Warehouse();
+    if (warehouse.id != null) {
+      response.setId(String.valueOf(warehouse.id));
+    }
     response.setBusinessUnitCode(warehouse.businessUnitCode);
     response.setLocation(warehouse.location);
     response.setCapacity(warehouse.capacity);
     response.setStock(warehouse.stock);
     return response;
+  }
+
+  /**
+   * Parses a warehouse ID string into a Long.
+   *
+   * @param id the ID string to parse
+   * @return the parsed Long ID
+   * @throws WebApplicationException with 400 status if id is not a valid number
+   */
+  private Long parseWarehouseId(String id) {
+    try {
+      return Long.parseLong(id);
+    } catch (NumberFormatException e) {
+      LOGGER.warnv("Invalid warehouse id format: {0}", id);
+      throw new WebApplicationException("Invalid warehouse id: " + id, 400);
+    }
   }
 }

@@ -22,4 +22,12 @@ public interface WarehouseStore {
   void deleteArchived(String businessUnitCode);
 
   Warehouse findByBusinessUnitCode(String buCode);
+
+  /**
+   * Finds a warehouse by its database ID.
+   *
+   * @param id the database ID
+   * @return the warehouse if found, or null if not found
+   */
+  Warehouse findByDatabaseId(Long id);
 }
